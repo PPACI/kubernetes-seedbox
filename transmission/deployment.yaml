@@ -47,6 +47,8 @@ spec:
               subPath: settings.json
             - mountPath: /config/torrents
               name: torrent
+            - mountPath: /downloads
+              name: download
         # Add a volume for /config/torrents which is where transmission store torrents
       volumes:
         - name: config
@@ -55,3 +57,6 @@ spec:
         - name: torrent
           persistentVolumeClaim:
             claimName: transmission-torrent
+        - name: download
+          persistentVolumeClaim:
+            claimName: transmission-download
