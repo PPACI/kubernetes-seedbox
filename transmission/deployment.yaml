@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transmission
+  labels:
+    app: transmision
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: transmission
+  template:
+    metadata:
+      labels:
+        app: transmission
+    spec:
+      containers:
+        - name: transmission
+          image: linuxserver/transmission:arm64v8-latest
+          resources:
+            limits:
+              memory: "256Mi"
+              cpu: "1000m"
+          ports:
+            - containerPort: 9091
+              name: rpc
+            - containerPort: 51413
+              name: peer
+            - containerPort: 51413
+              name: peer-udp
+              protocol: UDP
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "Europe/London"
+          livenessProbe:
+            httpGet:
+              port: 9091
+              path: /transmission/web/
+            periodSeconds: 60
+          volumeMounts:
+            - mountPath: /config/settings.json
+              name: config
+              subPath: settings.json
+            - mountPath: /config/torrents
+              name: torrent
+        # Add a volume for /config/torrents which is where transmission store torrents
+      volumes:
+        - name: config
+          configMap:
+            name: transmission-config
+        - name: torrent
+          persistentVolumeClaim:
+            claimName: transmission-torrent
